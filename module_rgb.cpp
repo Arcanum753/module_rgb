@@ -3,6 +3,7 @@
 #include "core_json/core_json.h"
 
 #include "module_rgb.h"
+#include "common_module.h"
 #include "module_rgb_version.h"
 #include "common/common.h"
 #include "core_sys/eertos.h"
@@ -152,15 +153,15 @@ void CLASS_MODULE_RGB::handleSave(AsyncWebServerRequest *request) {
             continue;
         }
         if (request->argName(i) == "solidColor") {
-            _config.solidColor = hexStringToUint32(request->arg(i));
+            _config.solidColor = ns_module_rgb::hexStringToUint32(request->arg(i));
             continue;
         }
         if (request->argName(i) == "gradStartColor") {
-            _config.gradStartColor = hexStringToUint32(request->arg(i));
+            _config.gradStartColor = ns_module_rgb::hexStringToUint32(request->arg(i));
             continue;
         }
         if (request->argName(i) == "gradEndColor") {
-            _config.gradEndColor = hexStringToUint32(request->arg(i));
+            _config.gradEndColor = ns_module_rgb::hexStringToUint32(request->arg(i));
             continue;
         }
         if (request->argName(i) == "eqBands") {
@@ -175,7 +176,7 @@ void CLASS_MODULE_RGB::handleSave(AsyncWebServerRequest *request) {
         if (request->argName(i).startsWith("ind_")) {
             uint8_t idx = (uint8_t)request->argName(i).substring(4).toInt();
             if (idx < RGB_MAX_LEDS && idx < _config.numLeds) {
-                _config.individualColors[idx] = hexStringToUint32(request->arg(i));
+                _config.individualColors[idx] = ns_module_rgb::hexStringToUint32(request->arg(i));
             }
             continue;
         }
@@ -201,7 +202,7 @@ void CLASS_MODULE_RGB::handleSetPixel(AsyncWebServerRequest *request) {
     }
 
     uint8_t idx = (uint8_t)constrain(request->getParam("index")->value().toInt(), 0, _config.numLeds - 1);
-    uint32_t color = hexStringToUint32(request->getParam("color")->value());
+    uint32_t color = ns_module_rgb::hexStringToUint32(request->getParam("color")->value());
 
     _config.individualColors[idx] = color;
 
@@ -323,15 +324,6 @@ void CLASS_MODULE_RGB::html_ver_get(AsyncWebServerRequest *request) {
 // ============================================================
 // Конкретная логика модуля
 // ============================================================
-
-uint32_t hexStringToUint32(const String& hexStr) {
-    if (hexStr.length() == 0) return 0;
-    String clean = hexStr;
-    clean.replace("#", "");
-    clean.replace("0x", "");
-    clean.replace("0X", "");
-    return (uint32_t)strtoul(clean.c_str(), NULL, 16);
-}
 
 void CLASS_MODULE_RGB::initStrip() {
     DEBUGRGB("%s: numLeds=%d\r\n", __FUNCTION__, _config.numLeds);
